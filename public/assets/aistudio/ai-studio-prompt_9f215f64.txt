@@ -1,0 +1,48 @@
+Build a native Android Kotlin app called "Jinwo EMI" for a mobile phone installment (EMI) company's customer-side device management.
+
+FIREBASE PROJECT: jinwo-emi-f6987 (project number 326921599569)
+PACKAGE NAME: com.jinwo.emi
+I am attaching google-services.json — add it to the app module.
+I am also attaching an HTML file (emi-customer-app-test.html) as the exact design reference for all screens, colors, spacing, icons and animations. Match it closely; it is already built in white/blue with a premium minimal style and Bengali text (Hind Siliguri / Noto Sans Bengali font).
+
+FIRESTORE STRUCTURE:
+- config/app (fields: companyName, logoUrl, lockBackgroundUrl, warningHeading, warningMessage, activeMessage, paymentGatewayUrl, paymentInstructions) — public read-only for the app, editable only from the admin panel
+- devices/{deviceId} (fields: status: "active"|"locked", amountDue, fcmToken, lastSeen)
+- orders/{orderId} (fields: deviceId, amount, status: "pending"|"paid", createdAt, pin)
+- tasks/{taskId} (fields: deviceId, name, iconUrl, description, steps: array of strings, status: "pending"|"done", requiresPermission: null|"camera"|"gallery", createdAt)
+
+All task content (name, description, steps) is plain text written by the admin in Firestore. The app must not contain any hardcoded task names or descriptions — everything renders from what's stored in tasks/{taskId}.
+
+SCREENS (follow the attached HTML reference exactly):
+1. Start screen: logo + company name (from config/app) + animated loading bar + short status text that updates 2-3 times + START button that enables once loading finishes
+2. Enrollment screen: explain and request only these permissions, one by one with a short one-line reason each: Device Admin / Device Owner (for lock-unlock), Notifications, Internet. No other permission requested at this stage. Register the device in Firestore devices/{deviceId} using the device's unique Android ID.
+3. Home/Active screen (single screen, no extra tabs or menus): shield icon, "Device active" status badge, activeMessage from config/app, and directly below it a live list of this device's tasks from Firestore (icon, name, short description, status badge "বাকি আছে"/"সম্পন্ন"). Tapping a task opens its detail screen listing the steps in order with a START button.
+4. Task detail / permission flow: if the tapped task's requiresPermission is "camera" or "gallery", show a one-line reason and request that specific Android runtime permission only at this point — never upfront at enrollment, never for tasks where requiresPermission is null. After permission is granted (or the step doesn't need one), mark the task tasks/{taskId}.status = "done" and return to the home screen.
+5. Locked screen (triggered when devices/{deviceId}.status becomes "locked" via a Firestore listener, or an FCM push as backup): full-screen background image = config/app.lockBackgroundUrl, a frosted glass card over it with warningHeading, warningMessage, amountDue, and a single PAY NOW button. Keep emergency calling available at all times. This screen must persist after device restart (Device Owner lock task mode) until status changes back to "active".
+6. Payment: PAY NOW opens config/app.paymentGatewayUrl in a WebView, passing orderId and amount as URL parameters. A Cloud Function will mark orders/{orderId}.status = "paid" and generate a 6-digit pin after the gateway confirms payment server-side. Do not trust any client-side payment confirmation.
+7. PIN screen: 6-digit numeric pad matching the HTML reference. On submit, verify the pin against the current order via a Cloud Function call (not a direct client read of other devices' orders). Correct pin updates devices/{deviceId}.status = "active" and returns to the home screen with a short "ফোন আনলক হয়েছে" confirmation screen first.
+
+BACKEND (Cloud Functions — scaffold these, note in code comments where the client calls them):
+- Function to create a payment order and build the gateway redirect URL
+- Function (webhook) to receive the gateway's payment confirmation and generate the pin
+- Function to verify a submitted pin against Firestore
+- Firestore onUpdate trigger on devices/{deviceId} that sends an FCM push when status changes, as a backup delivery path to the realtime listener
+
+SECURITY:
+- Never store the payment gateway's secret key in the Android app
+- Firestore security rules: a device can only read its own devices/{deviceId}, its own orders (where deviceId matches), and its own tasks (where deviceId matches, plus any global tasks); config/app is public read; all writes to devices/orders go through Cloud Functions only — lock down direct client writes to those collections
+- Use Firebase Auth anonymously for device identity so Firestore rules can match by auth uid / device ID
+
+IMPORTANT — ABOUT THE ATTACHED HTML FILE:
+The attached HTML file is a design/UX reference ONLY, used earlier to preview the flow. It contains a "TEST_MODE" flag with a debug button that manually triggers the locked screen, and a hardcoded test PIN shown on screen — these exist only so a human could click through the preview without a real backend. This is a design-preview artifact, not production logic, and none of it must appear in the real app:
+- Do NOT include any on-screen button, debug menu, or developer shortcut that locks/unlocks the device manually
+- Do NOT display any PIN anywhere in the app UI, in logs, or in comments
+- The ONLY way the locked screen appears is devices/{deviceId}.status == "locked" changing in Firestore (set by the admin panel / Cloud Functions), delivered via the Firestore listener or FCM push
+- The ONLY way the device unlocks is a correct PIN verified server-side via the Cloud Function in step 7 above
+Take colors, spacing, icons, typography and screen layout from the HTML file — take none of its TEST_MODE debug behavior.
+
+SCOPE — DO NOT ADD:
+- No admin dashboard inside this app — admin panel is a separate web project, this app only reads config/tasks/device status and writes task completion
+- No extra menus, settings screens, ads, or unrelated features beyond what's listed above
+- Do not request any permission beyond Device Admin/Device Owner, Notifications, Internet at enrollment, and camera/gallery only when a specific task declares it
+- Do not pre-fill or hardcode any task name, description, or step text — all of it comes from Firestore

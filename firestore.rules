@@ -1,0 +1,146 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return request.auth != null && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email_verified == true && request.auth.token.email == 'mdjaberislam0133@gmail.com')
+      );
+    }
+
+    function isValidAppConfig(data) {
+      return data.companyName is string && data.companyName.size() >= 1 && data.companyName.size() <= 120 &&
+             (!('logoUrl' in data) || data.logoUrl == null || (data.logoUrl is string && data.logoUrl.size() <= 500)) &&
+             (!('lockBackgroundUrl' in data) || data.lockBackgroundUrl == null || (data.lockBackgroundUrl is string && data.lockBackgroundUrl.size() <= 500)) &&
+             data.warningHeading is string && data.warningHeading.size() >= 1 && data.warningHeading.size() <= 200 &&
+             data.warningMessage is string && data.warningMessage.size() >= 1 && data.warningMessage.size() <= 1000 &&
+             data.activeMessage is string && data.activeMessage.size() >= 1 && data.activeMessage.size() <= 1000 &&
+             data.paymentGatewayUrl is string && data.paymentGatewayUrl.size() <= 500 &&
+             (!('paymentInstructions' in data) || data.paymentInstructions == null || (data.paymentInstructions is string && data.paymentInstructions.size() <= 500));
+    }
+
+    function isValidDeviceCreate(data, deviceId) {
+      return data.deviceId is string && data.deviceId == deviceId &&
+             data.status == 'active' &&
+             data.amountDue == 0 &&
+             (!('fcmToken' in data) || data.fcmToken == null || (data.fcmToken is string && data.fcmToken.size() <= 512)) &&
+             data.lastSeen is timestamp && data.lastSeen <= request.time &&
+             data.keys().hasAll(['deviceId', 'status', 'amountDue', 'lastSeen']) &&
+             data.keys().hasOnly(['deviceId', 'status', 'amountDue', 'fcmToken', 'lastSeen']);
+    }
+
+    function isValidDeviceUpdate(incomingData, existingData, deviceId) {
+      return incomingData.deviceId is string && incomingData.deviceId == deviceId &&
+             incomingData.lastSeen is timestamp && incomingData.lastSeen <= request.time &&
+             (!('fcmToken' in incomingData) || incomingData.fcmToken == null || (incomingData.fcmToken is string && incomingData.fcmToken.size() <= 512)) &&
+             incomingData.get('status', 'active') == existingData.get('status', 'active') &&
+             incomingData.get('amountDue', 0) == existingData.get('amountDue', 0) &&
+             incomingData.diff(existingData).affectedKeys().hasOnly(['deviceId', 'fcmToken', 'lastSeen']);
+    }
+
+    function isValidOrder(data) {
+      return data.deviceId is string && isValidId(data.deviceId) &&
+             data.amount is number && data.amount >= 0 &&
+             data.status in ['pending', 'paid'] &&
+             (!('pin' in data) || data.pin == null || (data.pin is string && data.pin.size() == 6)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidTask(data) {
+      return data.deviceId is string && data.deviceId.size() >= 1 && data.deviceId.size() <= 128 &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 150 &&
+             (!('iconUrl' in data) || data.iconUrl == null || (data.iconUrl is string && data.iconUrl.size() <= 500)) &&
+             data.description is string && data.description.size() <= 500 &&
+             data.steps is list && data.steps.size() <= 30 && (data.steps.size() == 0 || data.steps[0] is string) &&
+             data.status in ['pending', 'done'] &&
+             (!('requiresPermission' in data) || data.requiresPermission == null || data.requiresPermission in ['camera', 'gallery']) &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidGlobalTaskCompletion(data, deviceId, taskId) {
+      return data.taskId is string && data.taskId == taskId &&
+             data.deviceId is string && data.deviceId == deviceId &&
+             data.completedAt is timestamp && data.completedAt <= request.time;
+    }
+
+    match /admins/{adminUid} {
+      allow get: if request.auth != null && request.auth.uid == adminUid;
+      allow list, create, update, delete: if false;
+    }
+
+    // Public read-only app configuration; writable only by admin
+    match /config/{docId} {
+      allow get: if docId == 'app';
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && docId == 'app' && isValidAppConfig(incoming());
+      allow delete: if false;
+    }
+
+    // Device documents keyed by unique Android ID without user login.
+    // Devices can self-enroll (active, amountDue 0) and refresh lastSeen/fcmToken,
+    // but can NEVER alter lock status or amountDue (only Admin/Cloud Functions can lock/unlock).
+    match /devices/{deviceId} {
+      allow get: if isValidId(deviceId);
+      allow list: if isAdmin();
+      allow create: if isValidId(deviceId) && (
+        isAdmin() || isValidDeviceCreate(incoming(), deviceId)
+      );
+      allow update: if isValidId(deviceId) && (
+        isAdmin() || isValidDeviceUpdate(incoming(), existing(), deviceId)
+      );
+      allow delete: if isAdmin() && isValidId(deviceId);
+
+      match /taskCompletions/{taskId} {
+        allow get: if isValidId(deviceId) && isValidId(taskId);
+        allow list: if isValidId(deviceId);
+        allow create: if isValidId(deviceId) && isValidId(taskId) &&
+                         incoming().keys().hasAll(['taskId', 'deviceId', 'completedAt']) &&
+                         incoming().keys().hasOnly(['taskId', 'deviceId', 'completedAt']) &&
+                         isValidGlobalTaskCompletion(incoming(), deviceId, taskId);
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // Payment orders are readable only by exact document ID; all writes go through Cloud Functions / Admin only
+    match /orders/{orderId} {
+      allow get: if isValidId(orderId);
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && isValidId(orderId) && isValidOrder(incoming());
+      allow delete: if isAdmin() && isValidId(orderId);
+    }
+
+    // Tasks can be queried by deviceId or 'all', and a pending device-specific task can be marked 'done'.
+    match /tasks/{taskId} {
+      allow get: if isValidId(taskId);
+      allow list: if isAdmin() || existing().deviceId is string;
+      allow create: if isAdmin() && isValidId(taskId) && isValidTask(incoming());
+      allow update: if isValidId(taskId) && (
+        isAdmin() ||
+        (
+          existing().deviceId != 'all' &&
+          existing().status == 'pending' &&
+          incoming().status == 'done' &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+        )
+      );
+      allow delete: if isAdmin() && isValidId(taskId);
+    }
+  }
+}

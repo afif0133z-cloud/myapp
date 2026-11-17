@@ -1,0 +1,101 @@
+{
+  "entities": {
+    "AppConfig": {
+      "title": "AppConfig",
+      "description": "Global branding, lock screen messaging, and payment gateway configuration managed by the admin panel.",
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string", "description": "Display name of the EMI company" },
+        "logoUrl": { "type": "string", "description": "HTTPS URL for the company logo" },
+        "lockBackgroundUrl": { "type": "string", "description": "HTTPS URL for the full-screen lock background image" },
+        "warningHeading": { "type": "string", "description": "Lock screen heading text" },
+        "warningMessage": { "type": "string", "description": "Lock screen warning message" },
+        "activeMessage": { "type": "string", "description": "Home screen active message" },
+        "paymentGatewayUrl": { "type": "string", "description": "Payment gateway redirect URL" },
+        "paymentInstructions": { "type": "string", "description": "Short payment instruction note on the lock screen" }
+      },
+      "required": [
+        "companyName",
+        "warningHeading",
+        "warningMessage",
+        "activeMessage",
+        "paymentGatewayUrl"
+      ]
+    },
+    "Device": {
+      "title": "Device",
+      "description": "Enrolled customer device state and installment status keyed by Android ID without user login.",
+      "type": "object",
+      "properties": {
+        "deviceId": { "type": "string", "description": "Unique Android ID of the enrolled device" },
+        "status": { "type": "string", "enum": ["active", "locked"], "description": "Current lock state of the device" },
+        "amountDue": { "type": "number", "description": "Current installment amount due" },
+        "fcmToken": { "type": "string", "description": "FCM registration token for backup lock/unlock push notifications" },
+        "lastSeen": { "type": "string", "format": "date-time", "description": "Server timestamp of last device check-in" }
+      },
+      "required": ["deviceId", "status", "amountDue", "lastSeen"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Installment payment order created and verified server-side via Cloud Functions.",
+      "type": "object",
+      "properties": {
+        "deviceId": { "type": "string", "description": "Android ID associated with this payment order" },
+        "amount": { "type": "number", "description": "Payment amount" },
+        "status": { "type": "string", "enum": ["pending", "paid"], "description": "Payment verification status" },
+        "pin": { "type": "string", "description": "6-digit unlock PIN generated server-side upon payment confirmation" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp when order was created" }
+      },
+      "required": ["deviceId", "amount", "status", "createdAt"]
+    },
+    "DeviceTask": {
+      "title": "DeviceTask",
+      "description": "Admin-defined task assigned to a specific device or all devices.",
+      "type": "object",
+      "properties": {
+        "deviceId": { "type": "string", "description": "Target Android device ID or 'all' for global tasks" },
+        "name": { "type": "string", "description": "Task title written by admin" },
+        "iconUrl": { "type": "string", "description": "Optional task icon URL" },
+        "description": { "type": "string", "description": "Short task description written by admin" },
+        "steps": { "type": "array", "description": "Ordered list of plain-text step instructions" },
+        "status": { "type": "string", "enum": ["pending", "done"], "description": "Task completion status" },
+        "requiresPermission": { "type": "string", "enum": ["camera", "gallery"], "description": "Optional runtime permission required when starting the task" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp when task was created" }
+      },
+      "required": ["deviceId", "name", "description", "steps", "status", "createdAt"]
+    },
+    "GlobalTaskCompletion": {
+      "title": "GlobalTaskCompletion",
+      "description": "Per-device completion marker for global tasks where deviceId == 'all'.",
+      "type": "object",
+      "properties": {
+        "taskId": { "type": "string", "description": "Completed global task document ID" },
+        "deviceId": { "type": "string", "description": "Android ID of the device" },
+        "completedAt": { "type": "string", "format": "date-time", "description": "Server timestamp of completion" }
+      },
+      "required": ["taskId", "deviceId", "completedAt"]
+    }
+  },
+  "firestore": {
+    "/config/app": {
+      "schema": { "$ref": "#/entities/AppConfig" },
+      "description": "Global application branding, messaging, and payment gateway URL."
+    },
+    "/devices/{deviceId}": {
+      "schema": { "$ref": "#/entities/Device" },
+      "description": "Registered customer devices keyed by unique Android ID."
+    },
+    "/devices/{deviceId}/taskCompletions/{taskId}": {
+      "schema": { "$ref": "#/entities/GlobalTaskCompletion" },
+      "description": "Per-device completion records for global tasks."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Installment payment orders managed by Cloud Functions."
+    },
+    "/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/DeviceTask" },
+      "description": "Admin-assigned tasks for customer devices."
+    }
+  }
+}

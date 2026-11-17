@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Customer App</title>
+<style>
+:root{--blue:#2f6df6;--blue2:#e8f0ff;--ink:#16213a;--mut:#6b7a99;--line:#e3e9f6;--ok:#16945a;color-scheme:light}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#dfe7f7;font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center}
+.app{width:100%;max-width:430px;height:100dvh;position:relative;overflow:hidden;background:#fff;box-shadow:0 0 50px rgba(30,50,100,.2)}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 48px) 24px calc(env(safe-area-inset-bottom,0px) + 28px);text-align:center;background:linear-gradient(180deg,#fff 35%,var(--blue2));overflow-y:auto}
+.scr.on{display:flex;animation:in .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%}
+.logo{width:92px;height:92px;border-radius:28px;background:linear-gradient(145deg,#5b8dff,#2459e0);color:#fff;display:grid;place-items:center;font-size:38px;font-weight:700;box-shadow:0 14px 30px rgba(47,109,246,.35);overflow:hidden;position:relative}
+.logo img{width:100%;height:100%;object-fit:cover;display:block}
+.logo.sm{width:46px;height:46px;border-radius:15px;font-size:20px;box-shadow:0 6px 14px rgba(47,109,246,.3)}
+.halo{position:relative;display:grid;place-items:center}
+.halo::before,.halo::after{content:"";position:absolute;inset:-14px;border-radius:38px;border:1.5px solid rgba(47,109,246,.25);animation:pulse 2.4s ease-out infinite}
+.halo::after{animation-delay:1.2s}
+@keyframes pulse{from{transform:scale(.9);opacity:1}to{transform:scale(1.35);opacity:0}}
+h1{font-size:25px;margin-top:20px;font-weight:700}
+h2{font-size:21px;font-weight:700;margin-top:14px}
+.name{font-size:15px;font-weight:600;margin-top:8px}
+.sub{font-size:13.5px;color:var(--mut);margin-top:6px;line-height:1.6}
+.bar{width:160px;height:6px;border-radius:9px;background:var(--blue2);margin-top:30px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,#5b8dff,#2459e0);animation:ld 2.1s cubic-bezier(.3,.6,.3,1) forwards;box-shadow:0 0 10px rgba(47,109,246,.5)}
+@keyframes ld{0%{width:0}60%{width:72%}100%{width:100%}}
+.ldtxt{font-size:12.5px;color:var(--mut);margin-top:12px;min-height:16px}
+/* permission dialog overlay */
+.ovwrap{position:absolute;inset:0;background:rgba(10,15,30,.55);display:none;align-items:flex-end;z-index:30}
+.ovwrap.on{display:flex;animation:fadein .2s}
+@keyframes fadein{from{opacity:0}}
+.sheet{width:100%;background:#fff;border-radius:24px 24px 0 0;padding:22px 22px calc(env(safe-area-inset-bottom,0px) + 20px);text-align:center;animation:sheetup .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes sheetup{from{transform:translateY(100%)}}
+.sheet .sic{width:58px;height:58px;border-radius:50%;background:var(--blue2);color:var(--blue);display:grid;place-items:center;margin:0 auto}
+.sheet h3{font-size:16.5px;margin-top:14px}
+.sheet p{font-size:13px;color:var(--mut);margin-top:6px;line-height:1.55}
+.sheet .row2{display:flex;gap:10px;margin-top:18px}
+.sheet .row2 button{flex:1;border:0;border-radius:14px;padding:12px;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}
+.sheet .deny{background:#f1f3f9;color:var(--mut)}
+.sheet .allow{background:var(--blue);color:#fff}
+.btn{width:100%;border:0;border-radius:18px;padding:15px;font:inherit;font-size:16.5px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#4d86ff,#2459e0);color:#fff;box-shadow:0 12px 24px rgba(47,109,246,.35);display:flex;align-items:center;justify-content:center;gap:9px;transition:transform .15s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.4;box-shadow:none;cursor:default}
+svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic{width:68px;height:68px;border-radius:50%;background:linear-gradient(145deg,#fff,var(--blue2));color:var(--blue);display:grid;place-items:center;box-shadow:0 10px 24px rgba(47,109,246,.2),inset 0 0 0 1px #fff}
+.ic svg{width:32px;height:32px}
+.card{width:100%;background:#fff;border:1px solid var(--line);border-radius:22px;padding:16px;margin-top:18px;box-shadow:0 10px 26px rgba(47,109,246,.1);text-align:left}
+.msg{font-size:14.5px;line-height:1.7;color:#3b4766}
+.pill{display:inline-flex;align-items:center;gap:7px;background:#e6f7ef;color:var(--ok);padding:7px 15px;border-radius:99px;font-size:13.5px;font-weight:600;margin-top:14px}
+.pill svg{width:16px;height:16px}
+.live{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(22,148,90,.5);animation:lv 1.8s infinite}
+@keyframes lv{70%{box-shadow:0 0 0 8px rgba(22,148,90,0)}100%{box-shadow:0 0 0 0 rgba(22,148,90,0)}}
+/* enrollment rows */
+.rows{width:100%;margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;text-align:left;box-shadow:0 6px 16px rgba(47,109,246,.07);transition:.3s}
+.row .ri{width:42px;height:42px;border-radius:14px;background:var(--blue2);color:var(--blue);display:grid;place-items:center;flex:none;transition:.3s}
+.row b{font-size:14.5px;display:block}
+.row small{font-size:12px;color:var(--mut);line-height:1.45;display:block;margin-top:1px}
+.row .allow{margin-left:auto;border:0;background:var(--blue);color:#fff;font:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:99px;cursor:pointer;flex:none}
+.row.done{border-color:#bfe8d3;background:#f4fbf7}
+.row.done .ri{background:#d9f3e6;color:var(--ok)}
+.row.done .allow{background:#d9f3e6;color:var(--ok);pointer-events:none}
+.spin{width:44px;height:44px;border-radius:50%;border:4px solid var(--blue2);border-top-color:var(--blue);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.tbtn{margin-top:14px;border:1px dashed #b9c7e6;background:none;color:var(--mut);font:inherit;font-size:11.5px;padding:6px 12px;border-radius:99px;cursor:pointer}
+/* photo screens */
+.photo{color:#fff;background:#14213f center/cover no-repeat}
+.photo::before{content:"";position:fixed;inset:0;max-width:430px;margin:auto;background:linear-gradient(180deg,rgba(10,20,50,.35),rgba(10,20,50,.72));pointer-events:none}
+.photo>*{position:relative}
+.glass{width:100%;background:rgba(255,255,255,.16);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.32);border-radius:24px;padding:18px;margin-top:16px}
+.photo .ic{background:rgba(255,255,255,.2);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
+.photo .msg{color:#fff}
+.photo .name{color:#fff}
+.amt small{display:block;font-size:12.5px;opacity:.85}
+.amt b{font-size:40px}
+.ins{font-size:12px;opacity:.9;margin-top:12px;display:flex;gap:6px;align-items:center;justify-content:center}
+.ins svg{width:14px;height:14px}
+.emg{margin-top:12px;font-size:12px;opacity:.9;display:flex;gap:6px;align-items:center}
+.emg svg{width:14px;height:14px}
+.photo .btn{background:#fff;color:#1c4fd1;box-shadow:0 12px 26px rgba(0,0,0,.28)}
+/* gateway */
+.gw{background:#f5f8ff}
+.gwtop{width:100%;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut)}
+.gwtop svg{width:15px;height:15px;color:var(--ok)}
+.opt{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:12px;cursor:pointer;text-align:left;font-size:14.5px;font-weight:600;transition:.2s}
+.opt .ri{width:38px;height:38px;border-radius:12px;background:var(--blue2);color:var(--blue);display:grid;place-items:center}
+.opt .rd{margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid #c6d2ec}
+.opt.sel{border-color:var(--blue);background:#f2f6ff}
+.opt.sel .rd{border:6px solid var(--blue)}
+.tick{width:88px;height:88px;border-radius:50%;background:#fff;color:var(--ok);display:grid;place-items:center;box-shadow:0 14px 34px rgba(0,0,0,.3);animation:pop .5s cubic-bezier(.3,1.5,.5,1)}
+.tick svg{width:44px;height:44px;stroke-width:2.6}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+/* pin */
+.dots{display:flex;gap:13px;margin:16px 0 4px;justify-content:center}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.85);transition:.15s}
+.dots i.f{background:#fff;transform:scale(1.1)}
+.dots.err{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;width:100%;margin-top:12px}
+.pad button{height:54px;border-radius:18px;font:inherit;font-size:22px;font-weight:600;color:#fff;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.3);cursor:pointer;display:grid;place-items:center;backdrop-filter:blur(8px)}
+.pad button:active{background:rgba(255,255,255,.36)}
+.hint{font-size:13px;margin-top:8px;min-height:20px}
+.test{font-size:11.5px;opacity:.8;margin-top:10px}
+/* tasks */
+#tasks{align-items:stretch;text-align:left}
+.tophead{display:flex;align-items:center;gap:10px}
+.tophead h2{margin:0;font-size:19px}
+.back{border:0;background:var(--blue2);color:var(--blue);width:34px;height:34px;border-radius:12px;display:grid;place-items:center;cursor:pointer;flex:none}
+.tasklist{margin-top:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.taskcard{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 6px 16px rgba(47,109,246,.08);cursor:pointer}
+.taskcard img,.taskcard .tic{width:46px;height:46px;border-radius:14px;object-fit:cover;flex:none;background:var(--blue2);color:var(--blue);display:grid;place-items:center}
+.taskcard .tt{flex:1;min-width:0}
+.taskcard b{font-size:14.5px;display:block}
+.taskcard small{color:var(--mut);font-size:12px;display:block;margin-top:1px}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;flex:none}
+.badge.todo{background:var(--blue2);color:var(--blue)}
+.badge.done{background:#e6f7ef;color:var(--ok)}
+.taskdetail .mid{justify-content:flex-start;padding-top:10px}
+.steps{width:100%;display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.step{display:flex;gap:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;align-items:flex-start}
+.step .sn{width:26px;height:26px;border-radius:50%;background:var(--blue2);color:var(--blue);font-size:12.5px;font-weight:700;display:grid;place-items:center;flex:none}
+.step.done .sn{background:var(--ok);color:#fff}
+.step p{font-size:13.5px;line-height:1.55;color:#3b4766}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- 1: শুরু -->
+<section class="scr on" id="start">
+  <div class="mid">
+    <div class="halo"><div class="logo" data-logo>C</div></div>
+    <h1 data-company></h1>
+    <div class="bar"><i></i></div>
+    <div class="ldtxt" id="ldTxt">অ্যাপ প্রস্তুত হচ্ছে...</div>
+  </div>
+  <button class="btn" id="startBtn" disabled><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>START</button>
+</section>
+
+<!-- 2: অনুমতি -->
+<section class="scr" id="enroll">
+  <div class="logo sm" data-logo>C</div>
+  <h2>ডিভাইস সেটআপ</h2>
+  <p class="sub">নিচের অনুমতিগুলো দিলে আপনার ফোন কোম্পানির সাথে নিরাপদে যুক্ত হবে।</p>
+  <div class="rows">
+    <div class="row" data-perm><div class="ri"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg></div><div><b>ডিভাইস ম্যানেজমেন্ট</b><small>কিস্তির সময় ফোন লক-আনলক করতে</small></div><button class="allow">অনুমতি</button></div>
+    <div class="row" data-perm><div class="ri"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 004 0"/></svg></div><div><b>নোটিফিকেশন</b><small>কিস্তির খবর ও রিমাইন্ডার পেতে</small></div><button class="allow">অনুমতি</button></div>
+    <div class="row" data-perm><div class="ri"><svg viewBox="0 0 24 24"><path d="M2 9a15 15 0 0120 0M5.5 12.5a10 10 0 0113 0M9 16a5 5 0 016 0M12 19.5h.01"/></svg></div><div><b>ইন্টারনেট সংযোগ</b><small>কোম্পানির সার্ভারে ডিভাইস নিবন্ধন করতে</small></div><button class="allow">অনুমতি</button></div>
+  </div>
+  <div style="flex:1"></div>
+  <button class="btn" id="enrollBtn" disabled style="margin-top:18px"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>চালিয়ে যান</button>
+</section>
+
+<!-- 3: নিবন্ধন -->
+<section class="scr" id="register">
+  <div class="mid">
+    <div class="spin"></div>
+    <h2>ডিভাইস নিবন্ধন হচ্ছে</h2>
+    <p class="sub" id="regTxt">সার্ভারের সাথে যুক্ত হচ্ছে...</p>
+  </div>
+</section>
+
+<!-- 4: সক্রিয় -->
+<section class="scr" id="active">
+  <div class="logo sm" data-logo>C</div>
+  <div class="name" data-company></div>
+  <div class="mid">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
+    <h2>আপনার ফোন নিরাপদ</h2>
+    <p class="sub">সবকিছু ঠিকঠাক চলছে</p>
+    <span class="pill"><span class="live"></span>ডিভাইস সক্রিয়</span>
+    <div class="card"><p class="msg" data-activemsg></p></div>
+    <div class="tasklist" id="taskListBox" style="margin-top:16px;width:100%"></div>
+  </div>
+  <button class="tbtn" id="testLock">টেস্ট: অ্যাডমিন ফোন লক করছে</button>
+</section>
+
+<!-- টাস্ক বিস্তারিত -->
+<section class="scr taskdetail" id="taskDetail">
+  <div class="tophead"><button class="back" id="taskDetailBack"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="tdTitle">টাস্কের নাম</h2></div>
+  <div class="mid">
+    <p class="sub" style="text-align:left;width:100%" id="tdDesc"></p>
+    <div class="steps" id="tdSteps"></div>
+  </div>
+  <button class="btn" id="tdAction"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>START</button>
+  <div class="ovwrap" id="permOv">
+    <div class="sheet">
+      <div class="sic" id="permIcon"><svg viewBox="0 0 24 24" style="width:26px;height:26px"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+      <h3 id="permTitle">ক্যামেরা ব্যবহারের অনুমতি দিন</h3>
+      <p id="permDesc">এই টাস্কের জন্য ছবি তুলতে ক্যামেরা অ্যাক্সেস প্রয়োজন।</p>
+      <div class="row2"><button class="deny" id="permDeny">অনুমতি নেই</button><button class="allow" id="permAllow">অনুমতি দিন</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5: লক -->
+<section class="scr photo" id="lock">
+  <div class="logo sm" data-logo>C</div>
+  <div class="name" data-company></div>
+  <div class="mid">
+    <div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>
+    <h2 data-heading></h2>
+    <div class="glass">
+      <p class="msg" data-lockmsg></p>
+      <div class="amt" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.3)"><small>বকেয়া পরিমাণ</small><b data-amount></b></div>
+    </div>
+    <p class="ins"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span data-instr></span></p>
+  </div>
+  <button class="btn" id="payNow"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10.5h18"/></svg>PAY NOW</button>
+  <div class="emg"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg>জরুরি কল সবসময় চালু</div>
+</section>
+
+<!-- 6: পেমেন্ট গেটওয়ে -->
+<section class="scr gw" id="gateway" style="background:#f5f8ff;align-items:stretch;text-align:left">
+  <div class="gwtop"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>নিরাপদ পেমেন্ট পেজ</div>
+  <div class="card" style="margin-top:16px;text-align:center"><div class="sub" style="margin:0">পরিশোধযোগ্য</div><div style="font-size:38px;font-weight:700;color:var(--blue)" data-amount></div><div class="sub" style="margin:4px 0 0">রেফারেন্স: <b id="ref"></b></div></div>
+  <div class="rows" id="opts" style="margin-top:16px">
+    <div class="opt sel"><div class="ri"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 18h2"/></svg></div>মোবাইল ব্যাংকিং<span class="rd"></span></div>
+    <div class="opt"><div class="ri"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10.5h18"/></svg></div>কার্ড<span class="rd"></span></div>
+    <div class="opt"><div class="ri"><svg viewBox="0 0 24 24"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg></div>নেট ব্যাংকিং<span class="rd"></span></div>
+  </div>
+  <div style="flex:1"></div>
+  <button class="btn" id="doPay" style="margin-top:18px">পেমেন্ট করুন</button>
+</section>
+
+<!-- 7: যাচাই -->
+<section class="scr photo" id="verify">
+  <div class="mid">
+    <div class="spin" style="border-color:rgba(255,255,255,.25);border-top-color:#fff"></div>
+    <h2 id="vTitle">পেমেন্ট প্রসেস হচ্ছে</h2>
+    <p class="sub" style="color:#e5ecff" id="vTxt">অনুগ্রহ করে অপেক্ষা করুন...</p>
+  </div>
+</section>
+
+<!-- 8: সফল -->
+<section class="scr photo" id="success">
+  <div class="mid">
+    <div class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h2>পেমেন্ট সম্পন্ন হয়েছে</h2>
+    <div class="glass"><p class="msg">আপনার পেমেন্ট যাচাই হয়েছে। ফোন আনলক করতে পিন দিন।</p></div>
+  </div>
+  <button class="btn" id="toPin"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/></svg>পিন দিন</button>
+</section>
+
+<!-- 9: পিন -->
+<section class="scr photo" id="pin">
+  <div class="logo sm" data-logo>C</div>
+  <div class="mid">
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/></svg></div>
+    <h2>আনলক পিন দিন</h2>
+    <div class="dots" id="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="hint" id="hint"></div>
+    <div class="pad" id="pad"></div>
+    <div class="test" id="testPin"></div>
+  </div>
+</section>
+
+<!-- 10: আনলক -->
+<section class="scr photo" id="unlocked">
+  <div class="mid">
+    <div class="tick"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 017.5-1.9"/></svg></div>
+    <h2>ফোন আনলক হয়েছে</h2>
+    <p class="sub" style="color:#e5ecff">আপনার ফোন এখন স্বাভাবিকভাবে ব্যবহার করতে পারবেন</p>
+  </div>
+</section>
+
+</div>
+<script>
+/* ===== অ্যাডমিন প্যানেল/ব্যাকএন্ড থেকে আসবে ===== */
+const CONFIG={
+  companyName:"কোম্পানির নাম",
+  logoUrl:"https://i.postimg.cc/Xqss1GKX/file-00000000c6f0821191367557d1089f92.png",
+  lockBg:"https://i.postimg.cc/CxThLRpL/images-(1).jpg",
+  heading:"আপনার ফোনটি লক করা হয়েছে",
+  lockMessage:"দয়া করে বকেয়া কিস্তি পরিশোধ করুন, তারপর ফোন আনলক করুন।",
+  activeMessage:"আপনার কিস্তি সময়মতো পরিশোধ করুন এবং নিশ্চিন্তে ফোন ব্যবহার করুন।",
+  amount:"৳ ৩,৫০০",
+  instructions:"পেমেন্টের পর পিন পাবেন, সেটি দিয়ে ফোন আনলক করুন",
+  reference:"INS-20260317-0482",
+  /* অ্যাডমিন প্যানেল থেকে এভাবে টাস্ক যোগ/বিয়োগ হবে — প্রতিটা টাস্কের নাম, আইকন/লোগো আর ধাপ থাকবে */
+  /* name/desc/steps এখানে শুধু placeholder — অ্যাডমিন প্যানেল থেকে আপনি নিজের লেখা বসাবেন।
+     requiresPermission: null | "camera" | "gallery" — যে টাস্কে ছবি তোলা/গ্যালারি থেকে দেওয়া লাগবে সেটায় এটা সেট করবেন,
+     তাহলেই START চাপার পর শুধু সেই টাস্কেই অনুমতি চাওয়া হবে। */
+  tasks:[
+    {id:"t1",name:"টাস্ক ১ (নাম বসবে)",icon:"",desc:"বিবরণ এখানে বসবে",steps:["ধাপ ১ এর লেখা","ধাপ ২ এর লেখা"],requiresPermission:null},
+    {id:"t2",name:"টাস্ক ২ (নাম বসবে)",icon:"",desc:"বিবরণ এখানে বসবে",steps:["ধাপ ১ এর লেখা","ধাপ ২ এর লেখা","ধাপ ৩ এর লেখা"],requiresPermission:"camera"},
+    {id:"t3",name:"টাস্ক ৩ (নাম বসবে)",icon:"",desc:"বিবরণ এখানে বসবে",steps:["ধাপ ১ এর লেখা"],requiresPermission:"gallery"}
+  ]
+};
+const TEST_MODE=false, TEST_PIN="482915"; // এটা শুধু ডিজাইন প্রিভিউর জন্য — ফ্লো আবার দেখতে চাইলে সাময়িকভাবে true করুন, আসল অ্যাপের কোডে এই বাটন/পিন থাকবে না
+
+const $=(s,r=document)=>[...r.querySelectorAll(s)], el=id=>document.getElementById(id);
+$('[data-company]').forEach(e=>e.textContent=CONFIG.companyName);
+$('[data-heading]').forEach(e=>e.textContent=CONFIG.heading);
+$('[data-lockmsg]').forEach(e=>e.textContent=CONFIG.lockMessage);
+$('[data-activemsg]').forEach(e=>e.textContent=CONFIG.activeMessage);
+$('[data-amount]').forEach(e=>e.textContent=CONFIG.amount);
+$('[data-instr]').forEach(e=>e.textContent=CONFIG.instructions);
+el('ref').textContent=CONFIG.reference;
+$('[data-logo]').forEach(box=>{const i=new Image();i.alt="";i.onload=()=>{box.textContent="";box.appendChild(i)};i.src=CONFIG.logoUrl});
+$('.photo').forEach(e=>e.style.backgroundImage='url("'+CONFIG.lockBg+'")');
+if(!TEST_MODE)el('testLock').style.display='none';
+
+const scr=$('.scr');
+function go(id){scr.forEach(s=>s.classList.toggle('on',s.id===id));const n=el(id);n.scrollTop=0;if(id==='active')renderTasks()}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* শুরু */
+(async()=>{
+  const t=el('ldTxt');
+  for(const s of["অ্যাপ প্রস্তুত হচ্ছে...","কনফিগারেশন লোড হচ্ছে...","প্রস্তুত"]){t.textContent=s;await wait(700)}
+  el('startBtn').disabled=false;
+})();
+el('startBtn').onclick=()=>go('enroll');
+
+/* অনুমতি */
+$('[data-perm]').forEach(r=>r.querySelector('.allow').onclick=()=>{
+  r.classList.add('done');r.querySelector('.allow').textContent='✓ দেওয়া হয়েছে';
+  el('enrollBtn').disabled=$('[data-perm]').some(x=>!x.classList.contains('done'));
+});
+el('enrollBtn').onclick=async()=>{
+  go('register');
+  for(const t of["সার্ভারের সাথে যুক্ত হচ্ছে...","ডিভাইস যাচাই হচ্ছে...","নিবন্ধন সম্পন্ন হচ্ছে..."]){el('regTxt').textContent=t;await wait(1100)}
+  go('active');
+};
+
+/* টাস্ক তালিকা ও বিস্তারিত (অ্যাডমিন প্যানেল থেকে CONFIG.tasks বদলালে এখানে নিজে থেকেই প্রতিফলিত হবে) */
+const doneTasks=new Set();
+function renderTasks(){
+  const box=el('taskListBox');box.innerHTML="";
+  CONFIG.tasks.forEach(t=>{
+    const done=doneTasks.has(t.id);
+    const c=document.createElement('div');c.className='taskcard';
+    c.innerHTML=`${t.icon?('<img src="'+t.icon+'" alt="">'):('<div class="tic"><svg viewBox="0 0 24 24" style="width:22px;height:22px"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 11l2.5 2.5L16 8"/></svg></div>')}
+      <div class="tt"><b>${t.name}</b><small>${t.desc}</small></div>
+      <span class="badge ${done?'done':'todo'}">${done?'সম্পন্ন':'বাকি আছে'}</span>`;
+    c.onclick=()=>openTask(t.id);
+    box.appendChild(c);
+  });
+}
+function openTask(id){
+  const t=CONFIG.tasks.find(x=>x.id===id);if(!t)return;
+  el('tdTitle').textContent=t.name;el('tdDesc').textContent=t.desc;
+  const sb=el('tdSteps');sb.innerHTML="";
+  const done=doneTasks.has(id);
+  t.steps.forEach((s,i)=>{sb.innerHTML+=`<div class="step ${done?'done':''}"><div class="sn">${done?'✓':(i+1)}</div><p>${s}</p></div>`});
+  const btn=el('tdAction');
+  if(done){btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>সম্পন্ন হয়েছে';btn.disabled=true}
+  else{btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>START';btn.disabled=false;
+    btn.onclick=()=>startTask(t)}
+  go('taskDetail');
+}
+const PERM_TEXT={
+  camera:{title:"ক্যামেরা ব্যবহারের অনুমতি দিন",desc:"এই টাস্কের জন্য ছবি তুলতে ক্যামেরা অ্যাক্সেস প্রয়োজন।",icon:'<svg viewBox="0 0 24 24" style="width:26px;height:26px"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'},
+  gallery:{title:"গ্যালারি ব্যবহারের অনুমতি দিন",desc:"এই টাস্কের জন্য গ্যালারি থেকে ছবি বাছাই করতে অ্যাক্সেস প্রয়োজন।",icon:'<svg viewBox="0 0 24 24" style="width:26px;height:26px"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.7"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg>'}
+};
+async function startTask(t){
+  const btn=el('tdAction');
+  if(t.requiresPermission){
+    const p=PERM_TEXT[t.requiresPermission];
+    el('permIcon').innerHTML=p.icon;el('permTitle').textContent=p.title;el('permDesc').textContent=p.desc;
+    el('permOv').classList.add('on');
+    const granted=await new Promise(res=>{
+      el('permAllow').onclick=()=>{el('permOv').classList.remove('on');res(true)};
+      el('permDeny').onclick=()=>{el('permOv').classList.remove('on');res(false)};
+    });
+    if(!granted)return; // বাস্তব অ্যাপে: অনুমতি না দিলে টাস্ক অসম্পূর্ণ থেকে যাবে, আবার চেষ্টা করা যাবে
+  }
+  btn.disabled=true;btn.textContent="হচ্ছে...";await wait(900);doneTasks.add(t.id);openTask(t.id);
+}
+el('taskDetailBack').onclick=()=>{renderTasks();go('active')};
+
+/* লক */
+el('testLock').onclick=()=>go('lock');
+el('payNow').onclick=()=>go('gateway');
+
+/* গেটওয়ে */
+$('.opt').forEach(o=>o.onclick=()=>{$('.opt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel')});
+el('doPay').onclick=async()=>{
+  go('verify');el('vTitle').textContent="পেমেন্ট প্রসেস হচ্ছে";el('vTxt').textContent="অনুগ্রহ করে অপেক্ষা করুন...";
+  await wait(1600);el('vTitle').textContent="পেমেন্ট যাচাই হচ্ছে";el('vTxt').textContent="সার্ভার থেকে নিশ্চিত করা হচ্ছে...";
+  await wait(1600);go('success');
+};
+el('toPin').onclick=()=>{reset();go('pin')};
+
+/* পিন (আসল অ্যাপে ব্যাকএন্ড যাচাই করবে) */
+let pin="";const dots=el('dots'),hint=el('hint'),pad=el('pad');
+if(TEST_MODE)el('testPin').textContent="টেস্ট পিন: "+TEST_PIN;
+["1","2","3","4","5","6","7","8","9","","0","⌫"].forEach(k=>{const b=document.createElement('button');b.textContent=k;if(!k)b.style.visibility='hidden';b.onclick=()=>press(k);pad.appendChild(b)});
+function draw(){[...dots.children].forEach((d,i)=>d.classList.toggle('f',i<pin.length))}
+function reset(){pin="";draw();hint.textContent="পেমেন্টের পর পাওয়া ৬ অঙ্কের পিন"}
+async function press(k){
+  if(k==="⌫")pin=pin.slice(0,-1);else if(pin.length<6)pin+=k;
+  draw();
+  if(pin.length===6){
+    if(pin===TEST_PIN){hint.textContent="যাচাই হচ্ছে...";await wait(900);go('unlocked');await wait(2200);go('active')}
+    else{hint.textContent="ভুল পিন, আবার চেষ্টা করুন";dots.classList.add('err');await wait(400);dots.classList.remove('err');pin="";draw()}
+  }
+}
+</script>
+</body>
+</html>

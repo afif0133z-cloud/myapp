@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "326921599569",
+    "project_id": "jinwo-emi-f6987",
+    "storage_bucket": "jinwo-emi-f6987.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:326921599569:android:abeb95339433d85486d670",
+        "android_client_info": {
+          "package_name": "com.jinwo.emi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "326921599569-lemspgk458f5qbb1o2ffn80lvoebperi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByTpCyYnI7mnhta-Ubmj2oz5r9KneNYik"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "326921599569-lemspgk458f5qbb1o2ffn80lvoebperi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

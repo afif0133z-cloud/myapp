@@ -1,0 +1,67 @@
+<resources>
+    <string name="app_name">Free Baby Call</string>
+    <string name="default_company_name">Free Baby Call</string>
+    <string name="start_button">START</string>
+    <string name="loading_step_1">অ্যাপ প্রস্তুত হচ্ছে...</string>
+    <string name="loading_step_2">কনফিগারেশন লোড হচ্ছে...</string>
+    <string name="loading_step_3">প্রস্তুত</string>
+
+    <string name="enroll_title">ডিভাইস সেটআপ</string>
+    <string name="enroll_subtitle">নিচের অনুমতিগুলো দিলে আপনার ফোন কোম্পানির সাথে নিরাপদে যুক্ত হবে।</string>
+    <string name="perm_device_admin_title">ডিভাইস ম্যানেজমেন্ট</string>
+    <string name="perm_device_admin_desc">কিস্তির সময় ফোন লক-আনলক করতে</string>
+    <string name="perm_device_admin_rationale">কিস্তি ব্যবস্থাপনা ও ফোন লক-আনলক নিশ্চিত করতে ডিভাইস ম্যানেজমেন্ট অনুমতি প্রয়োজন।</string>
+    <string name="perm_notif_title">নোটিফিকেশন</string>
+    <string name="perm_notif_desc">কিস্তির খবর ও রিমাইন্ডার পেতে</string>
+    <string name="perm_internet_title">ইন্টারনেট সংযোগ</string>
+    <string name="perm_internet_desc">কোম্পানির সার্ভারে ডিভাইস নিবন্ধন করতে</string>
+    <string name="allow_btn">অনুমতি</string>
+    <string name="granted_btn">✓ দেওয়া হয়েছে</string>
+    <string name="continue_btn">চালিয়ে যান</string>
+
+    <string name="reg_title">ডিভাইস নিবন্ধন হচ্ছে</string>
+    <string name="reg_step_1">সার্ভারের সাথে যুক্ত হচ্ছে...</string>
+    <string name="reg_step_2">ডিভাইস যাচাই হচ্ছে...</string>
+    <string name="reg_step_3">নিবন্ধন সম্পন্ন হচ্ছে...</string>
+
+    <string name="active_title">আপনার ফোন নিরাপদ</string>
+    <string name="active_subtitle">সবকিছু ঠিকঠাক চলছে</string>
+    <string name="active_badge">ডিভাইস সক্রিয়</string>
+    <string name="default_active_message">আপনার কিস্তি সময়মতো পরিশোধ করুন এবং নিশ্চিন্তে ফোন ব্যবহার করুন।</string>
+    <string name="task_status_todo">বাকি আছে</string>
+    <string name="task_status_done">সম্পন্ন</string>
+    <string name="task_done_btn">সম্পন্ন হয়েছে</string>
+    <string name="task_processing">হচ্ছে...</string>
+    <string name="tasks_empty">এই মুহূর্তে কোনো টাস্ক নেই</string>
+
+    <string name="camera_perm_title">ক্যামেরা ব্যবহারের অনুমতি দিন</string>
+    <string name="camera_perm_desc">এই টাস্কের জন্য ছবি তুলতে ক্যামেরা অ্যাক্সেস প্রয়োজন।</string>
+    <string name="gallery_perm_title">গ্যালারি ব্যবহারের অনুমতি দিন</string>
+    <string name="gallery_perm_desc">এই টাস্কের জন্য গ্যালারি থেকে ছবি বাছাই করতে অ্যাক্সেস প্রয়োজন।</string>
+    <string name="perm_allow_action">অনুমতি দিন</string>
+    <string name="perm_deny_action">অনুমতি নেই</string>
+
+    <string name="default_warning_heading">আপনার ফোনটি লক করা হয়েছে</string>
+    <string name="default_warning_message">দয়া করে বকেয়া কিস্তি পরিশোধ করুন, তারপর ফোন আনলক করুন।</string>
+    <string name="amount_due_label">বকেয়া পরিমাণ</string>
+    <string name="default_payment_instructions">পেমেন্টের পর পিন পাবেন, সেটি দিয়ে ফোন আনলক করুন</string>
+    <string name="pay_now_btn">PAY NOW</string>
+    <string name="emergency_call_label">জরুরি কল সবসময় চালু</string>
+
+    <string name="gateway_header">নিরাপদ পেমেন্ট পেজ</string>
+    <string name="verify_title">পেমেন্ট যাচাই হচ্ছে</string>
+    <string name="verify_subtitle">সার্ভার থেকে নিশ্চিত করা হচ্ছে...</string>
+    <string name="payment_success_title">পেমেন্ট সম্পন্ন হয়েছে</string>
+    <string name="payment_success_msg">আপনার পেমেন্ট যাচাই হয়েছে। ফোন আনলক করতে পিন দিন।</string>
+    <string name="enter_pin_btn">পিন দিন</string>
+
+    <string name="pin_title">আনলক পিন দিন</string>
+    <string name="pin_hint">পেমেন্টের পর পাওয়া ৬ অঙ্কের পিন</string>
+    <string name="pin_verifying">যাচাই হচ্ছে...</string>
+    <string name="pin_wrong">ভুল পিন, আবার চেষ্টা করুন</string>
+    <string name="unlocked_title">ফোন আনলক হয়েছে</string>
+    <string name="unlocked_subtitle">আপনার ফোন এখন স্বাভাবিকভাবে ব্যবহার করতে পারবেন</string>
+
+    <string name="firebase_not_configured">Firebase কনফিগারেশন (google-services.json) যুক্ত করা হয়নি।</string>
+    <string name="notif_channel_name">কিস্তি ও নিরাপত্তা বার্তা</string>
+</resources>

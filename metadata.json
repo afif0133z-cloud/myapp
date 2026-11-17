@@ -1,0 +1,6 @@
+{
+  "name": "Free Baby Call",
+  "description": "Customer-side device management and installment payment app.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
